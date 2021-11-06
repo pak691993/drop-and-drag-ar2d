@@ -1,5 +1,5 @@
 import './App.css';
-import react, { useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import ItemComponent from './components/ItemComponent';
 const listColor = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'black']
 
@@ -20,32 +20,28 @@ const ar2D = () => {
 
 function App() {
   const [state, setstate] = useState(ar2D())
-  let dragItem = useRef(null)
+  let dragItem = useRef({})
+  let dragItemIndex = useRef([])
 
-  const onDragStart = (e, i, j) => {
+  const onDragStart = (i, j) => {
     dragItem = state[i][j];
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.mozCursor = 'default';
-    e.dataTransfer.dropEffect = 'copy'
-    console.log('start', i, j);
+    dragItemIndex = [i, j]
   };
 
   const onDragOver = (e, i, j) => {
-    const draggedOverItem = state[i][j];
     e.stopPropagation();
     e.preventDefault();
-    // console.log(draggedOverItem, 'draggedOverItem');
-  };
-
-  const onDragEnd = (i, j) => {
-    const draggedEnd = state[i][j];
-
-    // console.log(draggedEnd, i, j);
-    dragItem = null
   };
 
   const onDrop = (i, j) => {
-    console.log('drop', i, j);
+    const newState = JSON.parse(JSON.stringify(state))
+    const itemSwap = newState[i][j]
+
+    newState[i][j] = dragItem
+    newState[dragItemIndex[0]][dragItemIndex[1]] = itemSwap
+    setstate(newState)
+    dragItem = null
+    dragItemIndex = []
   }
 
   return (
@@ -63,10 +59,9 @@ function App() {
                   key={j}
                   className="drag"
                   draggable
-                  onDragStart={e => onDragStart(e, i, j)}
+                  onDragStart={() => onDragStart(i, j)}
                   onDragOver={(e) => onDragOver(e, i, j)}
-                  onDragEnd={() => onDragEnd(i, j)}
-                  onDrop={(e) => onDrop(i, j)}
+                  onDrop={() => onDrop(i, j)}
                   style={{
                     border: '1px solid black',
                     width: '60px',
